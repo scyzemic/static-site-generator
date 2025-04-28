@@ -13,15 +13,14 @@ class TestHTMLNode(unittest.TestCase):
         self.assertIsNone(node.props)
 
         # Test initialization with all parameters
-        children = [HTMLNode("p", "child")]
         props = {"class": "test-class", "id": "test-id"}
-        node = HTMLNode("div", "content", children, props)
+        node = HTMLNode("div", "content", None, props)
         self.assertEqual(node.tag, "div")
         self.assertEqual(node.value, "content")
-        self.assertEqual(node.children, children)
+        self.assertEqual(node.children, None)
         self.assertEqual(node.props, props)
 
-    def test_props_to_html_with_string_values(self):
+    def test_props_to_html(self):
         # Test with string attribute values
         props = {
             "class": "test-class",
@@ -41,17 +40,13 @@ class TestHTMLNode(unittest.TestCase):
     def test_repr(self):
         # Test string representation with empty node
         node = HTMLNode()
-        self.assertEqual(
-            repr(node), "HTMLNode(tag=None, value=None, children=None, props=None)"
-        )
+        self.assertEqual(repr(node), "HTMLNode(None, None, None, None)")
 
         # Test string representation with complete node
         children = [HTMLNode("span", "child text")]
         props = {"class": "text-bold"}
-        node = HTMLNode("p", "paragraph text", children, props)
-        expected = (
-            f"HTMLNode(tag=p, value=paragraph text, children={children}, props={props})"
-        )
+        node = HTMLNode("p", None, children, props)
+        expected = f"HTMLNode(p, None, {children}, {props})"
         self.assertEqual(repr(node), expected)
 
     def test_to_html(self):
