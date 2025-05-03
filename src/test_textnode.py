@@ -11,9 +11,9 @@ class TestTextNode(unittest.TestCase):
 
     def test_init(self):
         # Test initialization with required parameters
-        node = TextNode("Plain text", TextType.NORMAL)
+        node = TextNode("Plain text", TextType.TEXT)
         self.assertEqual(node.text, "Plain text")
-        self.assertEqual(node.text_type, TextType.NORMAL)
+        self.assertEqual(node.text_type, TextType.TEXT)
         self.assertIsNone(node.url)
 
         # Test initialization with all parameters
@@ -33,8 +33,8 @@ class TestTextNode(unittest.TestCase):
 
     def test_inequality(self):
         # Test inequality with different texts
-        node1 = TextNode("Text one", TextType.NORMAL)
-        node2 = TextNode("Text two", TextType.NORMAL)
+        node1 = TextNode("Text one", TextType.TEXT)
+        node2 = TextNode("Text two", TextType.TEXT)
         self.assertNotEqual(node1, node2)
 
         # Test inequality with different text types
@@ -49,8 +49,8 @@ class TestTextNode(unittest.TestCase):
 
     def test_repr(self):
         # Test string representation
-        normal_node = TextNode("Normal text", TextType.NORMAL)
-        self.assertEqual(repr(normal_node), "TextNode(Normal text, normal, None)")
+        text_node = TextNode("Plain text", TextType.TEXT)
+        self.assertEqual(repr(text_node), "TextNode(Plain text, text, None)")
 
         link_node = TextNode("Link text", TextType.LINK, "https://example.com")
         self.assertEqual(
