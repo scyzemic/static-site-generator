@@ -17,3 +17,7 @@ class TestLeafNode(unittest.TestCase):
     def test_leaf_to_html_tagless(self):
         node = LeafNode(None, "Plain text content")
         self.assertEqual(node.to_html(), "Plain text content")
+
+    def test_leaf_to_html_img(self):
+        node = LeafNode("img", "", {"src": "image.png", "alt": "An image"})
+        self.assertEqual(node.to_html(), '<img src="image.png" alt="An image"></img>')
