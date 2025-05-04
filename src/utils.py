@@ -58,3 +58,44 @@ def extract_markdown_links(text):
     # We need to find [text](url) patterns that aren't preceded by an exclamation mark
     # Using a negative lookbehind (?<!) to ensure we don't match image syntax
     return re.findall(r"(?<!!)\[(.*?)\]\((.*?)\)", text)
+
+
+def split_nodes_image(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        if isinstance(node, TextNode) and node.text_type == TextType.TEXT:
+            # split the text into parts based on the image syntax so that we get [text, img, text, img, text, etc.]
+            parts = re.split(r"(!\[.*?\]\(.*?\))", node.text)
+            for part in parts:
+                image_parts = extract_markdown_images(part)
+                if len(image_parts) == 1:
+                    image_node = TextNode(
+                        image_parts[0][0], TextType.IMAGE, image_parts[0][1]
+                    )
+                    new_nodes.append(image_node)
+                elif len(part) > 0:
+                    text_node = TextNode(part, TextType.TEXT)
+                    new_nodes.append(text_node)
+        else:
+            new_nodes.append(node)
+    return new_nodes
+
+
+def split_nodes_link(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        if isinstance(node, TextNode) and node.text_type == TextType.TEXT:
+            parts = re.split(r"((?<!!)\[.*?\]\(.*?\))", node.text)
+            for part in parts:
+                link_parts = extract_markdown_links(part)
+                if len(link_parts) == 1:
+                    link_node = TextNode(
+                        link_parts[0][0], TextType.LINK, link_parts[0][1]
+                    )
+                    new_nodes.append(link_node)
+                elif len(part) > 0:
+                    text_node = TextNode(part, TextType.TEXT)
+                    new_nodes.append(text_node)
+        else:
+            new_nodes.append(node)
+    return new_nodes
