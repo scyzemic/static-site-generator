@@ -29,17 +29,17 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
             and node.text_type == TextType.TEXT
             and delimiter in node.text
         ):
-            delimiter_count = 0
-            for char in node.text:
-                if char == delimiter:
-                    delimiter_count += 1
-            if delimiter_count % 2 != 0:
+            matched = re.findall(re.escape(delimiter), node.text)
+            if len(matched) % 2 != 0:
                 raise Exception(
                     f"You have an uneven number of {delimiter} in your text: {node.text}"
                 )
 
             parts = node.text.split(delimiter)
             for i in range(len(parts)):
+                text = parts[i]
+                if text == "":
+                    continue
                 if i % 2 != 0:
                     new_nodes.append(TextNode(parts[i], text_type))
                 else:
@@ -99,3 +99,25 @@ def split_nodes_link(old_nodes):
         else:
             new_nodes.append(node)
     return new_nodes
+
+
+def text_to_textnodes(text):
+    links_processed_nodes = split_nodes_link([TextNode(text, TextType.TEXT)])
+    images_processed_nodes = split_nodes_image(links_processed_nodes)
+    bold_text_processed_nodes = split_nodes_delimiter(
+        images_processed_nodes,
+        "**",
+        TextType.BOLD,
+    )
+    italic_text_processed_nodes = split_nodes_delimiter(
+        bold_text_processed_nodes,
+        "_",
+        TextType.ITALIC,
+    )
+    code_text_processed_nodes = split_nodes_delimiter(
+        italic_text_processed_nodes,
+        "`",
+        TextType.CODE,
+    )
+
+    return code_text_processed_nodes

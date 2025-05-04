@@ -7,6 +7,7 @@ from utils import (
     split_nodes_link,
     text_node_to_html_node,
     split_nodes_delimiter,
+    text_to_textnodes,
 )
 
 
@@ -64,8 +65,8 @@ class TestTextNodeToHtmlNode(unittest.TestCase):
 class TestSplitNodesDelimiter(unittest.TestCase):
     def test_split_nodes_asterisk(self):
         # Test with asterisk delimiter for bold text
-        nodes = [TextNode("This is *bold* text", TextType.TEXT)]
-        result = split_nodes_delimiter(nodes, "*", TextType.BOLD)
+        nodes = [TextNode("This is **bold** text", TextType.TEXT)]
+        result = split_nodes_delimiter(nodes, "**", TextType.BOLD)
         self.assertEqual(len(result), 3)
         self.assertEqual(result[0].text, "This is ")
         self.assertEqual(result[0].text_type, TextType.TEXT)
@@ -100,62 +101,56 @@ class TestSplitNodesDelimiter(unittest.TestCase):
 
     def test_multiple_delimiters(self):
         # Test text with multiple delimiter pairs
-        nodes = [TextNode("*Bold* text and more *bold* text", TextType.TEXT)]
-        result = split_nodes_delimiter(nodes, "*", TextType.BOLD)
-        self.assertEqual(len(result), 5)
-        self.assertEqual(result[0].text, "")
-        self.assertEqual(result[0].text_type, TextType.TEXT)
-        self.assertEqual(result[1].text, "Bold")
-        self.assertEqual(result[1].text_type, TextType.BOLD)
-        self.assertEqual(result[2].text, " text and more ")
-        self.assertEqual(result[2].text_type, TextType.TEXT)
-        self.assertEqual(result[3].text, "bold")
-        self.assertEqual(result[3].text_type, TextType.BOLD)
-        self.assertEqual(result[4].text, " text")
-        self.assertEqual(result[4].text_type, TextType.TEXT)
+        nodes = [TextNode("**Bold** text and more **bold** text", TextType.TEXT)]
+        result = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+        self.assertEqual(len(result), 4)
+        self.assertEqual(result[0].text, "Bold")
+        self.assertEqual(result[0].text_type, TextType.BOLD)
+        self.assertEqual(result[1].text, " text and more ")
+        self.assertEqual(result[1].text_type, TextType.TEXT)
+        self.assertEqual(result[2].text, "bold")
+        self.assertEqual(result[2].text_type, TextType.BOLD)
+        self.assertEqual(result[3].text, " text")
+        self.assertEqual(result[3].text_type, TextType.TEXT)
 
     def test_no_delimiters(self):
         # Test text with no delimiters
         nodes = [TextNode("Plain text without delimiters", TextType.TEXT)]
-        result = split_nodes_delimiter(nodes, "*", TextType.BOLD)
+        result = split_nodes_delimiter(nodes, "**", TextType.BOLD)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].text, "Plain text without delimiters")
         self.assertEqual(result[0].text_type, TextType.TEXT)
 
     def test_adjacent_delimiters(self):
         # Test text with adjacent delimiter pairs
-        nodes = [TextNode("This text has *bold**adjacent* markers", TextType.TEXT)]
-        result = split_nodes_delimiter(nodes, "*", TextType.BOLD)
-        self.assertEqual(len(result), 5)
+        nodes = [TextNode("This text has **bold****adjacent** markers", TextType.TEXT)]
+        result = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+        self.assertEqual(len(result), 4)
         self.assertEqual(result[0].text, "This text has ")
         self.assertEqual(result[0].text_type, TextType.TEXT)
         self.assertEqual(result[1].text, "bold")
         self.assertEqual(result[1].text_type, TextType.BOLD)
-        self.assertEqual(result[2].text, "")
-        self.assertEqual(result[2].text_type, TextType.TEXT)
-        self.assertEqual(result[3].text, "adjacent")
-        self.assertEqual(result[3].text_type, TextType.BOLD)
-        self.assertEqual(result[4].text, " markers")
-        self.assertEqual(result[4].text_type, TextType.TEXT)
+        self.assertEqual(result[2].text, "adjacent")
+        self.assertEqual(result[2].text_type, TextType.BOLD)
+        self.assertEqual(result[3].text, " markers")
+        self.assertEqual(result[3].text_type, TextType.TEXT)
 
     def test_empty_delimited_text(self):
         # Test empty text between delimiters
-        nodes = [TextNode("This has an ** empty bold section", TextType.TEXT)]
-        result = split_nodes_delimiter(nodes, "*", TextType.BOLD)
-        self.assertEqual(len(result), 3)
+        nodes = [TextNode("This has an **** empty bold section", TextType.TEXT)]
+        result = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+        self.assertEqual(len(result), 2)
         self.assertEqual(result[0].text, "This has an ")
         self.assertEqual(result[0].text_type, TextType.TEXT)
-        self.assertEqual(result[1].text, "")
-        self.assertEqual(result[1].text_type, TextType.BOLD)
-        self.assertEqual(result[2].text, " empty bold section")
-        self.assertEqual(result[2].text_type, TextType.TEXT)
+        self.assertEqual(result[1].text, " empty bold section")
+        self.assertEqual(result[1].text_type, TextType.TEXT)
 
     def test_mixed_node_types(self):
         # Test with a mix of text nodes and other types
-        text_node = TextNode("This is *bold* text", TextType.TEXT)
+        text_node = TextNode("This is **bold** text", TextType.TEXT)
         bold_node = TextNode("Already bold", TextType.BOLD)
         nodes = [text_node, bold_node]
-        result = split_nodes_delimiter(nodes, "*", TextType.BOLD)
+        result = split_nodes_delimiter(nodes, "**", TextType.BOLD)
         self.assertEqual(len(result), 4)
         self.assertEqual(result[0].text, "This is ")
         self.assertEqual(result[0].text_type, TextType.TEXT)
@@ -168,10 +163,10 @@ class TestSplitNodesDelimiter(unittest.TestCase):
 
     def test_uneven_delimiters(self):
         # Test exception with uneven number of delimiters
-        nodes = [TextNode("This text has *uneven delimiters", TextType.TEXT)]
+        nodes = [TextNode("This text has **uneven delimiters", TextType.TEXT)]
         with self.assertRaises(Exception) as context:
-            split_nodes_delimiter(nodes, "*", TextType.BOLD)
-        self.assertTrue("uneven number of *" in str(context.exception))
+            split_nodes_delimiter(nodes, "**", TextType.BOLD)
+        self.assertTrue("uneven number of **" in str(context.exception))
 
     def test_special_character_delimiter(self):
         # Test with a special character as delimiter
@@ -187,15 +182,11 @@ class TestSplitNodesDelimiter(unittest.TestCase):
 
     def test_delimiter_at_start_and_end(self):
         # Test delimiters at the start and end of text
-        nodes = [TextNode("*Bold text at the start and end*", TextType.TEXT)]
-        result = split_nodes_delimiter(nodes, "*", TextType.BOLD)
-        self.assertEqual(len(result), 3)
-        self.assertEqual(result[0].text, "")
-        self.assertEqual(result[0].text_type, TextType.TEXT)
-        self.assertEqual(result[1].text, "Bold text at the start and end")
-        self.assertEqual(result[1].text_type, TextType.BOLD)
-        self.assertEqual(result[2].text, "")
-        self.assertEqual(result[2].text_type, TextType.TEXT)
+        nodes = [TextNode("**Bold text at the start and end**", TextType.TEXT)]
+        result = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].text, "Bold text at the start and end")
+        self.assertEqual(result[0].text_type, TextType.BOLD)
 
 
 class TestExtractMarkdownImages(unittest.TestCase):
@@ -661,3 +652,165 @@ class TestSplitNodesLink(unittest.TestCase):
             ],
             new_nodes,
         )
+
+
+class TestTextToTextNodes(unittest.TestCase):
+    def test_text_to_text_nodes(self):
+        text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        new_nodes = [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("text", TextType.BOLD),
+            TextNode(" with an ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" word and a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" and an ", TextType.TEXT),
+            TextNode(
+                "obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"
+            ),
+            TextNode(" and a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+        ]
+        result = text_to_textnodes(text)
+        self.assertEqual(len(result), len(new_nodes))
+        for i in range(len(result)):
+            self.assertEqual(result[i].text, new_nodes[i].text)
+            self.assertEqual(result[i].text_type, new_nodes[i].text_type)
+            self.assertEqual(result[i].url, new_nodes[i].url)
+
+    def test_plain_text(self):
+        # Test with plain text without any markdown
+        text = "This is just plain text without any formatting"
+        result = text_to_textnodes(text)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].text, text)
+        self.assertEqual(result[0].text_type, TextType.TEXT)
+        self.assertEqual(result[0].url, None)
+
+    def test_bold_only(self):
+        # Test with text containing only bold formatting
+        text = "This has **bold** formatting"
+        expected = [
+            TextNode("This has ", TextType.TEXT),
+            TextNode("bold", TextType.BOLD),
+            TextNode(" formatting", TextType.TEXT),
+        ]
+        result = text_to_textnodes(text)
+        self.assertEqual(len(result), len(expected))
+        for i in range(len(result)):
+            self.assertEqual(result[i].text, expected[i].text)
+            self.assertEqual(result[i].text_type, expected[i].text_type)
+
+    def test_italic_only(self):
+        # Test with text containing only italic formatting
+        text = "This has _italic_ formatting"
+        expected = [
+            TextNode("This has ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" formatting", TextType.TEXT),
+        ]
+        result = text_to_textnodes(text)
+        self.assertEqual(len(result), len(expected))
+        for i in range(len(result)):
+            self.assertEqual(result[i].text, expected[i].text)
+            self.assertEqual(result[i].text_type, expected[i].text_type)
+
+    def test_code_only(self):
+        # Test with text containing only code formatting
+        text = "This has `code` formatting"
+        expected = [
+            TextNode("This has ", TextType.TEXT),
+            TextNode("code", TextType.CODE),
+            TextNode(" formatting", TextType.TEXT),
+        ]
+        result = text_to_textnodes(text)
+        self.assertEqual(len(result), len(expected))
+        for i in range(len(result)):
+            self.assertEqual(result[i].text, expected[i].text)
+            self.assertEqual(result[i].text_type, expected[i].text_type)
+
+    def test_link_only(self):
+        # Test with text containing only links
+        text = "This has a [link](https://example.com) in it"
+        expected = [
+            TextNode("This has a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://example.com"),
+            TextNode(" in it", TextType.TEXT),
+        ]
+        result = text_to_textnodes(text)
+        self.assertEqual(len(result), len(expected))
+        for i in range(len(result)):
+            self.assertEqual(result[i].text, expected[i].text)
+            self.assertEqual(result[i].text_type, expected[i].text_type)
+            self.assertEqual(result[i].url, expected[i].url)
+
+    def test_image_only(self):
+        # Test with text containing only images
+        text = "This has an ![image](https://example.com/image.jpg) in it"
+        expected = [
+            TextNode("This has an ", TextType.TEXT),
+            TextNode("image", TextType.IMAGE, "https://example.com/image.jpg"),
+            TextNode(" in it", TextType.TEXT),
+        ]
+        result = text_to_textnodes(text)
+        self.assertEqual(len(result), len(expected))
+        for i in range(len(result)):
+            self.assertEqual(result[i].text, expected[i].text)
+            self.assertEqual(result[i].text_type, expected[i].text_type)
+            self.assertEqual(result[i].url, expected[i].url)
+
+    def test_multiple_same_format(self):
+        # Test with multiple instances of the same format type
+        text = "This has **multiple** instances of **bold** text"
+        expected = [
+            TextNode("This has ", TextType.TEXT),
+            TextNode("multiple", TextType.BOLD),
+            TextNode(" instances of ", TextType.TEXT),
+            TextNode("bold", TextType.BOLD),
+            TextNode(" text", TextType.TEXT),
+        ]
+        result = text_to_textnodes(text)
+        self.assertEqual(len(result), len(expected))
+        for i in range(len(result)):
+            self.assertEqual(result[i].text, expected[i].text)
+            self.assertEqual(result[i].text_type, expected[i].text_type)
+
+    def test_nested_formats(self):
+        # Test with formats that appear to be nested (Note: actual nesting isn't supported)
+        text = "This has **bold with _italic_ inside** text"
+        expected = [
+            TextNode("This has ", TextType.TEXT),
+            TextNode("bold with _italic_ inside", TextType.BOLD),
+            TextNode(" text", TextType.TEXT),
+        ]
+        result = text_to_textnodes(text)
+        self.assertEqual(len(result), len(expected))
+        for i in range(len(result)):
+            self.assertEqual(result[i].text, expected[i].text)
+            self.assertEqual(result[i].text_type, expected[i].text_type)
+
+    def test_empty_string(self):
+        # Test with an empty string
+        text = ""
+        result = text_to_textnodes(text)
+        self.assertEqual(len(result), 0)
+
+    def test_only_delimiters(self):
+        # Test with text that is only delimiters (invalid markdown)
+        text = "**"
+        with self.assertRaises(Exception):
+            text_to_textnodes(text)
+
+    def test_all_formats_at_edges(self):
+        # Test with all format types at the beginning and end of the text
+        text = "**Bold start** middle text _italic end_"
+        expected = [
+            TextNode("Bold start", TextType.BOLD),
+            TextNode(" middle text ", TextType.TEXT),
+            TextNode("italic end", TextType.ITALIC),
+        ]
+        result = text_to_textnodes(text)
+        self.assertEqual(len(result), len(expected))
+        for i in range(len(result)):
+            self.assertEqual(result[i].text, expected[i].text)
+            self.assertEqual(result[i].text_type, expected[i].text_type)
