@@ -1,6 +1,11 @@
 import unittest
 from textnode import TextNode, TextType
-from utils import text_node_to_html_node, split_nodes_delimiter
+from utils import (
+    extract_markdown_images,
+    extract_markdown_links,
+    text_node_to_html_node,
+    split_nodes_delimiter,
+)
 
 
 class TestTextNodeToHtmlNode(unittest.TestCase):
@@ -189,3 +194,106 @@ class TestSplitNodesDelimiter(unittest.TestCase):
         self.assertEqual(result[1].text_type, TextType.BOLD)
         self.assertEqual(result[2].text, "")
         self.assertEqual(result[2].text_type, TextType.TEXT)
+
+
+class TestExtractMarkdownImages(unittest.TestCase):
+    def test_extract_markdown_images(self):
+        matches = extract_markdown_images(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
+        )
+        self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], matches)
+
+    def test_multiple_images(self):
+        text = "Here are multiple images: ![first](https://example.com/first.jpg) and ![second](https://example.com/second.png)"
+        matches = extract_markdown_images(text)
+        expected = [
+            ("first", "https://example.com/first.jpg"),
+            ("second", "https://example.com/second.png"),
+        ]
+        self.assertListEqual(expected, matches)
+
+    def test_empty_alt_text(self):
+        text = "Image with empty alt text: ![](https://example.com/empty.jpg)"
+        matches = extract_markdown_images(text)
+        self.assertListEqual([("", "https://example.com/empty.jpg")], matches)
+
+    def test_special_characters(self):
+        text = "Image with special chars: ![Image with spaces & symbols!](https://example.com/image-with-hyphens.jpg?size=large&format=png)"
+        matches = extract_markdown_images(text)
+        self.assertListEqual(
+            [
+                (
+                    "Image with spaces & symbols!",
+                    "https://example.com/image-with-hyphens.jpg?size=large&format=png",
+                )
+            ],
+            matches,
+        )
+
+    def test_no_images(self):
+        text = "This text has no images, only a regular [link](https://example.com)"
+        matches = extract_markdown_images(text)
+        self.assertListEqual([], matches)
+
+    def test_adjacent_images(self):
+        text = "Adjacent images:![first](https://example.com/1.jpg)![second](https://example.com/2.jpg)"
+        matches = extract_markdown_images(text)
+        expected = [
+            ("first", "https://example.com/1.jpg"),
+            ("second", "https://example.com/2.jpg"),
+        ]
+        self.assertListEqual(expected, matches)
+
+
+class TestExtractMarkdownLinks(unittest.TestCase):
+    def test_extract_markdown_links(self):
+        matches = extract_markdown_links(
+            "This is text with a [link](https://example.com)"
+        )
+        self.assertListEqual([("link", "https://example.com")], matches)
+
+    def test_multiple_links(self):
+        text = "Here are multiple links: [first](https://example.com/first) and [second](https://example.com/second)"
+        matches = extract_markdown_links(text)
+        expected = [
+            ("first", "https://example.com/first"),
+            ("second", "https://example.com/second"),
+        ]
+        self.assertListEqual(expected, matches)
+
+    def test_empty_text(self):
+        text = "Link with empty text: [](https://example.com/empty)"
+        matches = extract_markdown_links(text)
+        self.assertListEqual([("", "https://example.com/empty")], matches)
+
+    def test_special_characters_in_links(self):
+        text = "Link with special chars: [Link with spaces & symbols!](https://example.com/page?id=123&section=main#heading)"
+        matches = extract_markdown_links(text)
+        self.assertListEqual(
+            [
+                (
+                    "Link with spaces & symbols!",
+                    "https://example.com/page?id=123&section=main#heading",
+                )
+            ],
+            matches,
+        )
+
+    def test_no_links(self):
+        text = "This text has no links, only a regular image ![image](https://example.com/image.jpg)"
+        matches = extract_markdown_links(text)
+        self.assertListEqual([], matches)
+
+    def test_adjacent_links(self):
+        text = "Adjacent links:[first](https://example.com/1)[second](https://example.com/2)"
+        matches = extract_markdown_links(text)
+        expected = [
+            ("first", "https://example.com/1"),
+            ("second", "https://example.com/2"),
+        ]
+        self.assertListEqual(expected, matches)
+
+    def test_email_links(self):
+        text = "Email link: [Contact Us](mailto:example@example.com)"
+        matches = extract_markdown_links(text)
+        self.assertListEqual([("Contact Us", "mailto:example@example.com")], matches)

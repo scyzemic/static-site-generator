@@ -1,3 +1,4 @@
+import re
 from leafnode import LeafNode
 from textnode import TextNode, TextType
 
@@ -47,3 +48,13 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
             new_nodes.append(node)
 
     return new_nodes
+
+
+def extract_markdown_images(text):
+    return re.findall(r"!\[(.*?)\]\((.*?)\)", text)
+
+
+def extract_markdown_links(text):
+    # We need to find [text](url) patterns that aren't preceded by an exclamation mark
+    # Using a negative lookbehind (?<!) to ensure we don't match image syntax
+    return re.findall(r"(?<!!)\[(.*?)\]\((.*?)\)", text)
