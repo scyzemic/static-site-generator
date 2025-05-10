@@ -3,6 +3,7 @@ from textnode import TextNode, TextType
 from utils import (
     extract_markdown_images,
     extract_markdown_links,
+    markdown_to_blocks,
     split_nodes_image,
     split_nodes_link,
     text_node_to_html_node,
@@ -814,3 +815,147 @@ class TestTextToTextNodes(unittest.TestCase):
         for i in range(len(result)):
             self.assertEqual(result[i].text, expected[i].text)
             self.assertEqual(result[i].text_type, expected[i].text_type)
+
+
+class TestMarkdownToBlocks(unittest.TestCase):
+    def test_markdown_to_blocks(self):
+        md = """
+This is **bolded** paragraph
+
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+- This is a list
+- with items
+    """
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "This is **bolded** paragraph",
+                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+                "- This is a list\n- with items",
+            ],
+        )
+
+    def test_single_line(self):
+        # Test with a single line of text
+        md = "Just a single line of text"
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(blocks, ["Just a single line of text"])
+
+    def test_multiple_empty_lines(self):
+        # Test with multiple empty lines between paragraphs
+        md = """First paragraph
+
+        Second paragraph"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(blocks, ["First paragraph", "Second paragraph"])
+
+    def test_whitespace_only_lines(self):
+        # Test with lines containing only whitespace
+        md = """First paragraph
+
+
+Second paragraph"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(blocks, ["First paragraph", "Second paragraph"])
+
+    def test_headings(self):
+        # Test with markdown headings
+        md = """# Heading 1
+
+## Heading 2
+
+### Heading 3"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(blocks, ["# Heading 1", "## Heading 2", "### Heading 3"])
+
+    def test_lists(self):
+        # Test with ordered and unordered lists
+        md = """Unordered list:
+
+- Item 1
+- Item 2
+- Item 3
+
+Ordered list:
+
+1. First item
+2. Second item
+3. Third item"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "Unordered list:",
+                "- Item 1\n- Item 2\n- Item 3",
+                "Ordered list:",
+                "1. First item\n2. Second item\n3. Third item",
+            ],
+        )
+
+    def test_non_string_input(self):
+        # Test that a TypeError is raised for non-string inputs
+        with self.assertRaises(TypeError):
+            markdown_to_blocks(123)
+
+    def test_blockquotes(self):
+        # Test with blockquotes
+        md = """Here's a quote:
+
+> This is a blockquote
+> It spans multiple lines
+
+Normal text again."""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "Here's a quote:",
+                "> This is a blockquote\n> It spans multiple lines",
+                "Normal text again.",
+            ],
+        )
+
+    def test_horizontal_rules(self):
+        # Test with horizontal rules
+        md = """Text before rule
+
+---
+
+Text after rule"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(blocks, ["Text before rule", "---", "Text after rule"])
+
+    def test_mixed_content(self):
+        # Test with a mix of markdown elements
+        md = """# Static Site Generator
+
+This is a **simple** static site generator.
+
+## Features
+
+- Markdown parsing
+- HTML generation
+- CSS styling
+
+```python
+# Example usage
+md = "# Hello World"
+html = convert_markdown_to_html(md)
+```
+
+> Note: This project is in development."""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "# Static Site Generator",
+                "This is a **simple** static site generator.",
+                "## Features",
+                "- Markdown parsing\n- HTML generation\n- CSS styling",
+                '```python\n# Example usage\nmd = "# Hello World"\nhtml = convert_markdown_to_html(md)\n```',
+                "> Note: This project is in development.",
+            ],
+        )

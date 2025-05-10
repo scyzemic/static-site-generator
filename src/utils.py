@@ -121,3 +121,14 @@ def text_to_textnodes(text):
     )
 
     return code_text_processed_nodes
+
+
+def markdown_to_blocks(markdown):
+    if not isinstance(markdown, str):
+        raise TypeError("Expected markdown to be a string")
+
+    blocks = markdown.split("\n\n")
+    stripped_blocks = list(map(str.strip, blocks))
+    non_empty_blocks = list(filter(lambda x: len(x) > 0, stripped_blocks))
+
+    return non_empty_blocks
