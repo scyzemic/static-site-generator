@@ -1,6 +1,5 @@
 import unittest
-from parentnode import ParentNode
-from leafnode import LeafNode
+from nodes import ParentNode, LeafNode
 
 
 class TestParentNode(unittest.TestCase):
@@ -17,7 +16,7 @@ class TestParentNode(unittest.TestCase):
             parent_node.to_html(),
             "<div><span><b>grandchild</b></span></div>",
         )
-        
+
     def test_to_html_with_multiple_children(self):
         child_node1 = LeafNode("span", "child1")
         child_node2 = LeafNode("span", "child2")
@@ -27,7 +26,7 @@ class TestParentNode(unittest.TestCase):
             parent_node.to_html(),
             "<div><span>child1</span><span>child2</span><span>child3</span></div>",
         )
-        
+
     def test_nested_parent_nodes(self):
         leaf1 = LeafNode("p", "text1")
         leaf2 = LeafNode("p", "text2")
@@ -38,7 +37,7 @@ class TestParentNode(unittest.TestCase):
             outer_parent.to_html(),
             "<main><div><p>text1</p></div><section><p>text2</p></section></main>",
         )
-        
+
     def test_deeply_nested_structure(self):
         leaf = LeafNode("span", "content")
         level3 = ParentNode("div", [leaf])
@@ -49,7 +48,7 @@ class TestParentNode(unittest.TestCase):
             root.to_html(),
             "<main><article><section><div><span>content</span></div></section></article></main>",
         )
-        
+
     def test_with_props(self):
         child = LeafNode("span", "text", {"class": "highlight"})
         parent = ParentNode("div", [child], {"id": "container", "class": "wrapper"})
@@ -57,7 +56,7 @@ class TestParentNode(unittest.TestCase):
             parent.to_html(),
             '<div id="container" class="wrapper"><span class="highlight">text</span></div>',
         )
-        
+
     def test_mixed_children_types(self):
         leaf1 = LeafNode("b", "bold")
         leaf2 = LeafNode("i", "italic")
@@ -67,18 +66,18 @@ class TestParentNode(unittest.TestCase):
             parent.to_html(),
             "<div><span><b>bold</b></span><i>italic</i></div>",
         )
-        
+
     def test_empty_children_list(self):
         # While the implementation might throw an error for no children,
         # an empty list of children is a valid edge case to test
         parent = ParentNode("div", [])
         self.assertEqual(parent.to_html(), "<div></div>")
-        
+
     def test_none_children_error(self):
         with self.assertRaises(ValueError):
             parent = ParentNode("div", None)
             parent.to_html()
-            
+
     def test_none_tag_error(self):
         with self.assertRaises(ValueError):
             parent = ParentNode(None, [LeafNode("p", "text")])
