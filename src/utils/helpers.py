@@ -48,7 +48,9 @@ def extract_title(markdown: str) -> str:
         raise ValueError("Title not found in markdown file.")
 
 
-def generate_page(from_path: str, template_path: str, dest_path: str) -> None:
+def generate_page(
+    from_path: str, template_path: str, dest_path: str, basepath: str
+) -> None:
     """Given the path to a markdown file, a template file, and a destination path, parse the markdown file, convert it to HTML string, and generate a new HTML file using the template.
 
     Args:
@@ -69,6 +71,10 @@ def generate_page(from_path: str, template_path: str, dest_path: str) -> None:
             template_contents = template_contents.replace(
                 "{{ Content }}", file_contents_html
             )
+            template_contents = template_contents.replace(
+                'href="/', f'href="{basepath}'
+            )
+            template_contents = template_contents.replace('src="/', f'src="{basepath}')
 
             os.makedirs(os.path.dirname(dest_path), exist_ok=True)
 
@@ -77,7 +83,7 @@ def generate_page(from_path: str, template_path: str, dest_path: str) -> None:
 
 
 def generate_pages_recursive(
-    dir_path_content: str, template_path: str, dest_dir_path: str
+    dir_path_content: str, template_path: str, dest_dir_path: str, basepath: str
 ) -> None:
     """Crawls the content directory and generates HTML pages to the public directory for each markdown file found using the template provided.
 
@@ -91,7 +97,9 @@ def generate_pages_recursive(
         if os.path.isfile(content_path):
             if content.endswith(".md"):
                 dest_path = os.path.join(dest_dir_path, content.replace(".md", ".html"))
-                generate_page(content_path, template_path, dest_path)
+                generate_page(content_path, template_path, dest_path, basepath)
         else:
             new_dest_dir = os.path.join(dest_dir_path, content)
-            generate_pages_recursive(content_path, template_path, new_dest_dir)
+            generate_pages_recursive(
+                content_path, template_path, new_dest_dir, basepath
+            )
