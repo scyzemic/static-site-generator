@@ -1,6 +1,8 @@
 import os
 import shutil
 
+from markdown.converter import markdown_to_html_node
+
 
 def source_to_destination(src: str, dest: str) -> None:
     """copies all content from the source directory to the destination directory recursively.
@@ -28,3 +30,47 @@ def source_to_destination(src: str, dest: str) -> None:
             shutil.copy(name, dest)
         else:
             source_to_destination(name, os.path.join(dest, item))
+
+
+def extract_title(markdown: str) -> str:
+    """Extracts the title from a markdown file.
+
+    Args:
+        markdown (str): content of a markdown document
+
+    Returns:
+        str: title of the markdown file
+    """
+    title_line = markdown.split("\n")[0]
+    if title_line.startswith("# "):
+        return title_line[2:].strip()
+    else:
+        raise ValueError("Title not found in markdown file.")
+
+
+def generate_page(from_path: str, template_path: str, dest_path: str) -> None:
+    """Given the path to a markdown file, a template file, and a destination path, parse the markdown file, convert it to HTML string, and generate a new HTML file using the template.
+
+    Args:
+        from_path (str): path to the markdown file
+        template_path (str): path to the template file
+        dest_path (str): path to the destination HTML file
+    """
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+    with open(from_path, "r") as f:
+        file_contents = f.read()
+        with open(template_path, "r") as t:
+            template_contents = t.read()
+
+            file_contents_html = markdown_to_html_node(file_contents).to_html()
+            page_title = extract_title(file_contents)
+
+            template_contents = template_contents.replace("{{ Title }}", page_title)
+            template_contents = template_contents.replace(
+                "{{ Content }}", file_contents_html
+            )
+
+            os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+
+            with open(dest_path, "w") as f:
+                f.write(template_contents)
