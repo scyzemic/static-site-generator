@@ -1,13 +1,9 @@
-from utils.helpers import source_to_destination, generate_page
+from utils.helpers import generate_pages_recursive, source_to_destination
 
 
 def main():
     source_to_destination("static", "public")
-    generate_page(
-        from_path="content/index.md",
-        template_path="template.html",
-        dest_path="public/index.html",
-    )
+    generate_pages_recursive("content", "template.html", "public")
 
 
 if __name__ == "__main__":
