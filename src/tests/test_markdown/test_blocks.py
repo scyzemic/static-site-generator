@@ -80,11 +80,6 @@ Ordered list:
             ],
         )
 
-    def test_non_string_input(self):
-        # Test that a TypeError is raised for non-string inputs
-        with self.assertRaises(TypeError):
-            markdown_to_blocks(123)
-
     def test_blockquotes(self):
         # Test with blockquotes
         md = """Here's a quote:

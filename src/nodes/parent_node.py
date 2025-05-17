@@ -1,4 +1,6 @@
+from typing import List, Union, Self
 from .html_node import HTMLNode
+from .leaf_node import LeafNode
 
 
 class ParentNode(HTMLNode):
@@ -6,7 +8,7 @@ class ParentNode(HTMLNode):
     A class representing a parent node in an HTML document.
     """
 
-    def __init__(self, tag, children, props=None):
+    def __init__(self, tag: str, children: List[Union[LeafNode, Self]], props=None):
         """
         Initialize the ParentNode with a tag, attributes, and children.
 

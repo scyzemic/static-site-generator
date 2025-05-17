@@ -6,7 +6,7 @@ class LeafNode(HTMLNode):
     A class representing a leaf node in an HTML document.
     """
 
-    def __init__(self, tag, value, props=None):
+    def __init__(self, tag: str, value: str, props=None):
         """
         Initialize the LeafNode with a tag, attributes, and text.
 

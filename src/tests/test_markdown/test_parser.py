@@ -4,7 +4,7 @@ from markdown.parser import (
     split_nodes_delimiter,
     split_nodes_image,
     split_nodes_link,
-    text_to_textnodes,
+    text_to_text_nodes,
     extract_markdown_images,
     extract_markdown_links,
 )
@@ -619,7 +619,7 @@ class TestTextToTextNodes(unittest.TestCase):
             TextNode(" and a ", TextType.TEXT),
             TextNode("link", TextType.LINK, "https://boot.dev"),
         ]
-        result = text_to_textnodes(text)
+        result = text_to_text_nodes(text)
         self.assertEqual(len(result), len(new_nodes))
         for i in range(len(result)):
             self.assertEqual(result[i].text, new_nodes[i].text)
@@ -629,7 +629,7 @@ class TestTextToTextNodes(unittest.TestCase):
     def test_plain_text(self):
         # Test with plain text without any markdown
         text = "This is just plain text without any formatting"
-        result = text_to_textnodes(text)
+        result = text_to_text_nodes(text)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].text, text)
         self.assertEqual(result[0].text_type, TextType.TEXT)
@@ -643,7 +643,7 @@ class TestTextToTextNodes(unittest.TestCase):
             TextNode("bold", TextType.BOLD),
             TextNode(" formatting", TextType.TEXT),
         ]
-        result = text_to_textnodes(text)
+        result = text_to_text_nodes(text)
         self.assertEqual(len(result), len(expected))
         for i in range(len(result)):
             self.assertEqual(result[i].text, expected[i].text)
@@ -657,7 +657,7 @@ class TestTextToTextNodes(unittest.TestCase):
             TextNode("italic", TextType.ITALIC),
             TextNode(" formatting", TextType.TEXT),
         ]
-        result = text_to_textnodes(text)
+        result = text_to_text_nodes(text)
         self.assertEqual(len(result), len(expected))
         for i in range(len(result)):
             self.assertEqual(result[i].text, expected[i].text)
@@ -671,7 +671,7 @@ class TestTextToTextNodes(unittest.TestCase):
             TextNode("code", TextType.CODE),
             TextNode(" formatting", TextType.TEXT),
         ]
-        result = text_to_textnodes(text)
+        result = text_to_text_nodes(text)
         self.assertEqual(len(result), len(expected))
         for i in range(len(result)):
             self.assertEqual(result[i].text, expected[i].text)
@@ -685,7 +685,7 @@ class TestTextToTextNodes(unittest.TestCase):
             TextNode("link", TextType.LINK, "https://example.com"),
             TextNode(" in it", TextType.TEXT),
         ]
-        result = text_to_textnodes(text)
+        result = text_to_text_nodes(text)
         self.assertEqual(len(result), len(expected))
         for i in range(len(result)):
             self.assertEqual(result[i].text, expected[i].text)
@@ -700,7 +700,7 @@ class TestTextToTextNodes(unittest.TestCase):
             TextNode("image", TextType.IMAGE, "https://example.com/image.jpg"),
             TextNode(" in it", TextType.TEXT),
         ]
-        result = text_to_textnodes(text)
+        result = text_to_text_nodes(text)
         self.assertEqual(len(result), len(expected))
         for i in range(len(result)):
             self.assertEqual(result[i].text, expected[i].text)
@@ -717,7 +717,7 @@ class TestTextToTextNodes(unittest.TestCase):
             TextNode("bold", TextType.BOLD),
             TextNode(" text", TextType.TEXT),
         ]
-        result = text_to_textnodes(text)
+        result = text_to_text_nodes(text)
         self.assertEqual(len(result), len(expected))
         for i in range(len(result)):
             self.assertEqual(result[i].text, expected[i].text)
@@ -731,7 +731,7 @@ class TestTextToTextNodes(unittest.TestCase):
             TextNode("bold with _italic_ inside", TextType.BOLD),
             TextNode(" text", TextType.TEXT),
         ]
-        result = text_to_textnodes(text)
+        result = text_to_text_nodes(text)
         self.assertEqual(len(result), len(expected))
         for i in range(len(result)):
             self.assertEqual(result[i].text, expected[i].text)
@@ -740,14 +740,14 @@ class TestTextToTextNodes(unittest.TestCase):
     def test_empty_string(self):
         # Test with an empty string
         text = ""
-        result = text_to_textnodes(text)
+        result = text_to_text_nodes(text)
         self.assertEqual(len(result), 0)
 
     def test_only_delimiters(self):
         # Test with text that is only delimiters (invalid markdown)
         text = "**"
         with self.assertRaises(Exception):
-            text_to_textnodes(text)
+            text_to_text_nodes(text)
 
     def test_all_formats_at_edges(self):
         # Test with all format types at the beginning and end of the text
@@ -757,7 +757,7 @@ class TestTextToTextNodes(unittest.TestCase):
             TextNode(" middle text ", TextType.TEXT),
             TextNode("italic end", TextType.ITALIC),
         ]
-        result = text_to_textnodes(text)
+        result = text_to_text_nodes(text)
         self.assertEqual(len(result), len(expected))
         for i in range(len(result)):
             self.assertEqual(result[i].text, expected[i].text)

@@ -11,10 +11,7 @@ class BlockType(Enum):
     ORDERED_LIST = "ordered_list"
 
 
-def block_to_block_type(block):
-    if not isinstance(block, str):
-        raise TypeError("Expected block to be a string")
-
+def block_to_block_type(block: str) -> BlockType:
     match block:
         case block if re.match(r"^#{1,6}\s", block):
             return BlockType.HEADING
@@ -30,10 +27,20 @@ def block_to_block_type(block):
             return BlockType.PARAGRAPH
 
 
-def markdown_to_blocks(markdown):
-    if not isinstance(markdown, str):
-        raise TypeError("Expected markdown to be a string")
+def markdown_to_blocks(markdown: str) -> list[str]:
+    """
+    Convert a markdown string into a list of blocks.
 
+    Blocks in markdown are separated by blank lines. This function splits
+    the input markdown string by double newlines, strips whitespace from
+    each block, and filters out any empty blocks.
+
+    Args:
+        markdown (str): The markdown text to process
+
+    Returns:
+        list: A list of non-empty markdown blocks
+    """
     blocks = markdown.split("\n\n")
     stripped_blocks = list(map(str.strip, blocks))
     non_empty_blocks = list(filter(lambda x: len(x) > 0, stripped_blocks))
