@@ -1,8 +1,8 @@
-from nodes.text_node import TextNode, TextType
+from utils.helpers import source_to_destination
 
 
 def main():
-    print(TextNode("This is some text", TextType.BOLD, "https://example.com"))
+    source_to_destination("static", "public")
 
 
 if __name__ == "__main__":
